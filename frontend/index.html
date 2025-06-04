@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Data Migration Tool</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.2/dist/lux/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar navbar-dark bg-primary mb-4">
+    <div class="container-fluid">
+        <span class="navbar-brand mb-0 h1">Data Migration Tool</span>
+    </div>
+</nav>
+<div class="container">
+    <div id="migrations" class="mb-4">
+        <div class="card">
+            <div class="card-header">
+                Past Migrations
+            </div>
+            <ul id="migration-list" class="list-group list-group-flush"></ul>
+        </div>
+    </div>
+    <div id="new">
+        <div class="card">
+            <div class="card-header">Start New Migration</div>
+            <div class="card-body">
+                <form id="upload-form" class="mb-2">
+                    <input type="file" name="files" multiple class="form-control mb-2">
+                    <textarea name="description" placeholder="Describe transformation" rows="4" class="form-control mb-2"></textarea>
+                    <button type="submit" class="btn btn-success">Submit</button>
+                </form>
+                <p id="result" class="fw-bold"></p>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+async function loadMigrations() {
+    const resp = await fetch('/migrations');
+    const data = await resp.json();
+    const list = document.getElementById('migration-list');
+    list.innerHTML = '';
+    data.migrations.forEach(m => {
+        const li = document.createElement('li');
+        li.className = 'list-group-item';
+        li.innerHTML = `<a href="/migrations/${m}/view">${m}</a>`;
+        list.appendChild(li);
+    });
+}
+
+loadMigrations();
+
+document.getElementById('upload-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const data = new FormData(form);
+    const resp = await fetch('/migrations', {
+        method: 'POST',
+        body: data
+    });
+    const result = await resp.json();
+    document.getElementById('result').textContent = result.message;
+    loadMigrations();
+});
+</script>
+</body>
+</html>
