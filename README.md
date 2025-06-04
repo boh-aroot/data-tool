@@ -1,7 +1,3 @@
-# Data Migration Tool
-
-This project contains a simple web application for experimenting with small data migrations.
-
 ## Running with Docker
 
 ```bash
