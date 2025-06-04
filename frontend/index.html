@@ -3,26 +3,36 @@
 <head>
     <meta charset="utf-8" />
     <title>Data Migration Tool</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 2em; }
-        #migrations { margin-bottom: 2em; }
-        .migration { margin-bottom: 0.5em; }
-    </style>
+    <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.2/dist/lux/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-<h1>Data Migration Tool</h1>
-<div id="migrations">
-    <h2>Past Migrations</h2>
-    <ul id="migration-list"></ul>
-</div>
-<div id="new">
-    <h2>Start New Migration</h2>
-    <form id="upload-form">
-        <input type="file" name="files" multiple><br><br>
-        <textarea name="description" placeholder="Describe transformation" rows="4" cols="50"></textarea><br><br>
-        <button type="submit">Submit</button>
-    </form>
-    <p id="result"></p>
+<nav class="navbar navbar-dark bg-primary mb-4">
+    <div class="container-fluid">
+        <span class="navbar-brand mb-0 h1">Data Migration Tool</span>
+    </div>
+</nav>
+<div class="container">
+    <div id="migrations" class="mb-4">
+        <div class="card">
+            <div class="card-header">
+                Past Migrations
+            </div>
+            <ul id="migration-list" class="list-group list-group-flush"></ul>
+        </div>
+    </div>
+    <div id="new">
+        <div class="card">
+            <div class="card-header">Start New Migration</div>
+            <div class="card-body">
+                <form id="upload-form" class="mb-2">
+                    <input type="file" name="files" multiple class="form-control mb-2">
+                    <textarea name="description" placeholder="Describe transformation" rows="4" class="form-control mb-2"></textarea>
+                    <button type="submit" class="btn btn-success">Submit</button>
+                </form>
+                <p id="result" class="fw-bold"></p>
+            </div>
+        </div>
+    </div>
 </div>
 <script>
 async function loadMigrations() {
@@ -32,8 +42,8 @@ async function loadMigrations() {
     list.innerHTML = '';
     data.migrations.forEach(m => {
         const li = document.createElement('li');
-        li.textContent = m;
-        li.className = 'migration';
+        li.className = 'list-group-item';
+        li.innerHTML = `<a href="/migrations/${m}/view">${m}</a>`;
         list.appendChild(li);
     });
 }

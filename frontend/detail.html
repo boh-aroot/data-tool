@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Migration Detail</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.2/dist/lux/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+</head>
+<body>
+<nav class="navbar navbar-dark bg-primary mb-4">
+    <div class="container-fluid">
+        <a href="/" class="navbar-brand">Data Migration Tool</a>
+    </div>
+</nav>
+<div class="container">
+    <h1 class="mb-4">Migration Detail</h1>
+    <div id="tables" class="mb-4"></div>
+    <div class="card mb-4">
+        <div class="card-header">Add Additional Input Files</div>
+        <div class="card-body">
+            <form id="add-files-form" class="mb-2">
+                <input type="file" name="files" multiple class="form-control mb-2">
+                <button type="submit" class="btn btn-primary">Upload</button>
+            </form>
+        </div>
+    </div>
+    <div class="card mb-4">
+        <div class="card-header">Conversation</div>
+        <div class="card-body">
+            <div id="history" class="border p-2 mb-2" style="height:200px; overflow-y:scroll;"></div>
+            <form id="prompt-form" class="input-group">
+                <input type="text" name="prompt" class="form-control" placeholder="Ask a question or give a command">
+                <button type="submit" class="btn btn-success">Send</button>
+            </form>
+            <p id="response" class="mt-2"></p>
+        </div>
+    </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
+<script>
+const params = new URLSearchParams(window.location.search);
+const id = params.get('id');
+let inputs = [];
+async function loadDetails() {
+    const resp = await fetch(`/migrations/${id}`);
+    const data = await resp.json();
+    inputs = data.inputs;
+    const tablesDiv = document.getElementById('tables');
+    tablesDiv.innerHTML = '';
+    for (const file of inputs) {
+        const previewResp = await fetch(`/migrations/${id}/preview?file=${encodeURIComponent(file)}`);
+        const preview = await previewResp.json();
+        const table = document.createElement('table');
+        table.className = 'display';
+        const thead = document.createElement('thead');
+        const tr = document.createElement('tr');
+        preview.headers.forEach(h => {
+            const th = document.createElement('th');
+            th.textContent = h;
+            tr.appendChild(th);
+        });
+        thead.appendChild(tr);
+        table.appendChild(thead);
+        const tbody = document.createElement('tbody');
+        preview.rows.forEach(r => {
+            const rowTr = document.createElement('tr');
+            preview.headers.forEach(h => {
+                const td = document.createElement('td');
+                td.textContent = r[h] || '';
+                rowTr.appendChild(td);
+            });
+            tbody.appendChild(rowTr);
+        });
+        table.appendChild(tbody);
+        tablesDiv.appendChild(document.createElement('h4')).textContent = file;
+        tablesDiv.appendChild(table);
+        $(table).DataTable({ paging:false, searching:false, info:false });
+    }
+    const historyDiv = document.getElementById('history');
+    historyDiv.innerHTML = '';
+    data.history.forEach(msg => {
+        const p = document.createElement('p');
+        p.textContent = `${msg.role}: ${msg.content}`;
+        historyDiv.appendChild(p);
+    });
+}
+loadDetails();
+
+document.getElementById('add-files-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const data = new FormData(form);
+    const resp = await fetch(`/migrations/${id}/files`, {
+        method: 'POST',
+        body: data
+    });
+    await resp.json();
+    form.reset();
+    loadDetails();
+});
+
+document.getElementById('prompt-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const data = new FormData(form);
+    const resp = await fetch(`/migrations/${id}/prompt`, {
+        method: 'POST',
+        body: data
+    });
+    const result = await resp.json();
+    document.getElementById('response').textContent = result.message;
+    form.reset();
+    loadDetails();
+});
+</script>
+</body>
+</html>
