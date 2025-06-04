@@ -13,13 +13,8 @@ Then open `http://localhost:8000` in your browser.
 
 ## Direct Python execution
 
-If you have Python 3 installed, install the dependencies from `requirements.txt` first:
 
-```bash
-pip install -r requirements.txt
-```
-
-Then you can start the server with:
+If you have Python 3 and the packages in `requirements.txt` installed you can run:
 
 ```bash
 uvicorn backend.main:app --reload
