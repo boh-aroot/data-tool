@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Data Migration Tool</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2em; }
+        #migrations { margin-bottom: 2em; }
+        .migration { margin-bottom: 0.5em; }
+    </style>
+</head>
+<body>
+<h1>Data Migration Tool</h1>
+<div id="migrations">
+    <h2>Past Migrations</h2>
+    <ul id="migration-list"></ul>
+</div>
+<div id="new">
+    <h2>Start New Migration</h2>
+    <form id="upload-form">
+        <input type="file" name="files" multiple><br><br>
+        <textarea name="description" placeholder="Describe transformation" rows="4" cols="50"></textarea><br><br>
+        <button type="submit">Submit</button>
+    </form>
+    <p id="result"></p>
+</div>
+<script>
+async function loadMigrations() {
+    const resp = await fetch('/migrations');
+    const data = await resp.json();
+    const list = document.getElementById('migration-list');
+    list.innerHTML = '';
+    data.migrations.forEach(m => {
+        const li = document.createElement('li');
+        li.textContent = m;
+        li.className = 'migration';
+        list.appendChild(li);
+    });
+}
+
+loadMigrations();
+
+document.getElementById('upload-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const data = new FormData(form);
+    const resp = await fetch('/migrations', {
+        method: 'POST',
+        body: data
+    });
+    const result = await resp.json();
+    document.getElementById('result').textContent = result.message;
+    loadMigrations();
+});
+</script>
+</body>
+</html>
